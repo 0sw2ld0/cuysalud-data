@@ -1,2 +1,6 @@
 _site/
 .DS_Store
+
+evidence/
+__pycache__/
+.pytest_cache/
