@@ -8,6 +8,7 @@ from decimal import Decimal, InvalidOperation
 import unicodedata
 import zipfile
 import polars as pl
+from pricing_basis import drug_basis
 import hashlib
 ROOT = Path(__file__).parent
 CATEGORIES = {"I-1", "I-2", "I-3", "I-4", "II-1", "II-2", "II-E", "III-1", "III-2", "III-E"}
@@ -219,6 +220,7 @@ def mtc_rows(raw, source, limit=2000, period="2026-08"):
             "essentialSource": None,
             "source": source,
         }
+        product["pricingBasis"] = drug_basis(product)
         median = decimal_string(row["mediana"])
         mean = decimal_string(row["media"])
         mode = decimal_string(row["moda"])
@@ -229,7 +231,7 @@ def mtc_rows(raw, source, limit=2000, period="2026-08"):
             "drugId": identifier,
             "scope": "national-private-retail",
             "period": period,
-            "unitLabel": "por " + ({"TABLETA": "tableta", "COMPRIMIDO": "comprimido", "CAPSULA": "cápsula"}.get(normalized(form).upper(), "unidad del producto (" + form.lower() + ")")),
+            "unitLabel": product["pricingBasis"]["unitLabel"] or "unidad de venta no precisada",
             "meanSoles": mean,
             "medianSoles": median,
             "modeSoles": mode,

@@ -32,6 +32,7 @@ jobs:
       - name: Obtener ediciones públicas enlazadas
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: python etl/refresh.py
+      - run: python etl/audit_pricing.py
       - name: Validar snapshot antes de guardar
         run: node scripts/build.mjs
       - name: Guardar nueva edición validada

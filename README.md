@@ -23,3 +23,9 @@ Si no hay cambios, no genera otra versión ni modifica la fecha de corte. Si hay
 Pruebas locales: `pip install -r etl/requirements.txt` y `PYTHONPATH=etl pytest -q etl/tests`. Adquisición: `python etl/refresh.py`; empaquetado: `node scripts/build.mjs`.
 
 No se incluyen recetas, imágenes ni datos de pacientes. No hay API de escritura ni servidor de aplicación.
+
+## Unidad del precio y envase
+
+Cada producto incluye `pricingBasis` (versión 1): interpretación conservadora de la presentación y las fracciones originales, unidad concreta cuando se puede identificar, regla utilizada y motivo cuando no se puede. No se calculan precios de cajas, dosis, mL o gramos por multiplicación o división. Las presentaciones compuestas, sólidos dentro de frascos/sobres y unidades insuficientemente descritas quedan como `unresolved`; las apps muestran “unidad de venta no precisada”. Los importes originales se conservan. Cada interpretación incluye sus campos de entrada para descartar etiquetas obsoletas si la presentación cambia.
+
+La auditoría `python etl/audit_pricing.py` revisa todos los productos y filas de FARMAMINSA antes de publicar. Su informe por registro se conserva en la evidencia de Actions. La obtención automática aplica las mismas reglas a nuevas ediciones DIGEMID. Las listas FARMAMINSA se mantienen con su corte declarado.
