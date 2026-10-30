@@ -82,13 +82,19 @@ def _institutional_basis(row):
     declared='Presentación publicada: '+(row.get('presentation') or row['description'])
     # Some PDFs put the dispensing unit in a separate column after a wrapped description.
     if (presentation == "- par -" and description.startswith("guante quirurgico esteril descartable")
-        and not re.search(r"\bx\s*\d+\s*(?:par|pares|uni|unidad)", description)):
+        and not re.search(r"\bx\s*\d+\s*(?:pares|par|uni|unidades|unidad)", description)):
         return basis('resolved','por par',declared,'institutional-pair',
                      'La columna de presentación de la fila oficial indica PAR para guantes; el precio está expresado por unidad publicada.')
+    # Some PDF layouts place the explicitly declared unit in the second column.
+    # A following weight is an item specification, not a package count.
+    if (re.fullmatch(r"- unidad -(?:unidad| [0-9]+(?:[.,][0-9]+)? g)?", presentation)
+        and not re.search(r"\bx\s*\d+\s*(?:uni|unidades|unidad|pares|par)\b", description + " " + presentation)):
+        return basis('resolved','por unidad del artículo descrito',declared,'institutional-explicit-unit-column',
+                     'La fila del PDF identifica UNIDAD y su columna informa precio unitario; no se infiere un recipiente ni una agrupación.')
     # The PDF explicitly names UNIDAD for these individual products. Do not infer
     # unit count where the row says e.g. "X 5 UNI" (a package of five).
     if (re.search(r" - unidad -", description) and presentation in ("", "unidad")
-        and not re.search(r"\bx\s*\d+\s*(?:uni|unidad)", description)):
+        and not re.search(r"\bx\s*\d+\s*(?:uni|unidades|unidad)", description)):
         return basis('resolved','por unidad',declared,'institutional-unit',
                      'La lista oficial indica precio unitario y la fila especifica UNIDAD; no identifica una caja ni una agrupación.')
     for token,unit in [('tablet','tableta'),('ovulo','óvulo'),('par','par')]:

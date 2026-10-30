@@ -62,3 +62,13 @@ def test_pdf_pair_from_separate_presentation_column():
     assert institutional_basis(row)["unitLabel"] == "por par"
     row["description"] += " X 5 PARES"
     assert institutional_basis(row)["status"] == "unresolved"
+
+
+def test_pdf_explicit_unit_column_without_assuming_package():
+    for presentation in ("- UNIDAD -", "- UNIDAD -UNIDAD", "- UNIDAD - 25 g"):
+        row = dict(description="ALGODON HIDROFILO -", presentation=presentation)
+        assert institutional_basis(row)["unitLabel"] == "por unidad del artículo descrito"
+    row = dict(description="GASA - X 5 UNIDADES", presentation="- UNIDAD -")
+    assert institutional_basis(row)["status"] == "unresolved"
+    row = dict(description="ARTICULO -", presentation="- UNIDAD - X 5 UNI")
+    assert institutional_basis(row)["status"] == "unresolved"
