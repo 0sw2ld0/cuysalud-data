@@ -49,3 +49,16 @@ def test_pdf_form_does_not_invent_container():
  assert institutional_basis(row)['unitLabel']=='por tableta'
  row['presentation']='INYECT'
  assert institutional_basis(row)['unitLabel'] is None
+
+
+def test_pdf_explicit_unit_requires_no_multiple_pack():
+    assert institutional_basis(dict(description="RESPIRADOR QUIRURGICO TIPO N-95 - - - UNIDAD - -",presentation="UNIDAD"))["unitLabel"] == "por unidad"
+    assert institutional_basis(dict(description="SONDA VESICAL - 2 VIAS DESCARTABLE - UNIDAD - N° 14",presentation=None))["unitLabel"] == "por unidad"
+    assert institutional_basis(dict(description="GASA - - UNIDAD - X 5 UNI",presentation="UNIDAD"))["status"] == "unresolved"
+
+
+def test_pdf_pair_from_separate_presentation_column():
+    row = dict(description="GUANTE QUIRURGICO ESTERIL DESCARTABLE Nº 7 -", presentation="- PAR -")
+    assert institutional_basis(row)["unitLabel"] == "por par"
+    row["description"] += " X 5 PARES"
+    assert institutional_basis(row)["status"] == "unresolved"

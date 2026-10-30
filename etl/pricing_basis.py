@@ -80,6 +80,17 @@ def _institutional_basis(row):
     description=norm(row['description'])
     presentation=norm(row.get('presentation'))
     declared='Presentación publicada: '+(row.get('presentation') or row['description'])
+    # Some PDFs put the dispensing unit in a separate column after a wrapped description.
+    if (presentation == "- par -" and description.startswith("guante quirurgico esteril descartable")
+        and not re.search(r"\bx\s*\d+\s*(?:par|pares|uni|unidad)", description)):
+        return basis('resolved','por par',declared,'institutional-pair',
+                     'La columna de presentación de la fila oficial indica PAR para guantes; el precio está expresado por unidad publicada.')
+    # The PDF explicitly names UNIDAD for these individual products. Do not infer
+    # unit count where the row says e.g. "X 5 UNI" (a package of five).
+    if (re.search(r" - unidad -", description) and presentation in ("", "unidad")
+        and not re.search(r"\bx\s*\d+\s*(?:uni|unidad)", description)):
+        return basis('resolved','por unidad',declared,'institutional-unit',
+                     'La lista oficial indica precio unitario y la fila especifica UNIDAD; no identifica una caja ni una agrupación.')
     for token,unit in [('tablet','tableta'),('ovulo','óvulo'),('par','par')]:
         if re.search(rf'(?:^| - ){token}(?: -|$)',description) and presentation in ('',token,'- par -'):
             return basis('resolved','por '+unit,declared,'institutional-'+token,'Columna de precio unitario y unidad explícita de la fila original; sin enlace supuesto al catálogo DIGEMID.')
